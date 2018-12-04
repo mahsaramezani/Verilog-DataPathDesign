@@ -1,0 +1,42 @@
+`timescale 1ns/1ps
+module fileregister(readrg1,readrg2,writerg,writedata,rgwrite,data1,data2);
+    input[4:0] readrg1,readrg2,writerg;
+    input[31:0] writedata;
+    input rgwrite;
+    integer i;
+    output[31:0] data1,data2;
+    reg[31:0] data1,data2;
+    reg[31:0]file_reg[31:0];
+    initial 
+    begin
+         for(i = 0;i <= 31;i = i + 1)
+        file_reg[i]=32'd0;
+    end
+    always@(rgwrite or readrg1 or readrg2 or writedata)
+    begin
+        if(rgwrite)
+        file_reg[writerg]=writedata;
+        else
+        begin
+            data1=file_reg[readrg1];
+            data2=file_reg[readrg2];
+        end
+    end
+endmodule
+//*****************************************************************
+
+`timescale 1ns/1ps
+module test_fileregister;
+    reg[4:0]READRG1,READRG2,WRITERG;
+    reg[31:0]WRITEDATA;
+    reg RGWRITE;
+    wire[31:0] data1,data2;
+    
+ fileregister i1(READRG1,READRG2,WRITERG,WRITEDATA,RGWRITE,data1,data2);
+    
+    initial
+    begin
+        READRG1=5'b00000; READRG2=5'b00001; WRITERG=5'b00010; WRITEDATA=32'd0; RGWRITE=1'b0;
+        #5 READRG1=5'b00100; READRG2=5'b00101; WRITERG=5'b00011; WRITEDATA=32'd0; RGWRITE=1'b1;
+    end
+endmodule

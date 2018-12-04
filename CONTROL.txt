@@ -1,0 +1,92 @@
+`timescale 1ns/1ps
+module control(op,datai,func,jump,pcup,regdst,alusrc,memtoreg,regwrite,memread,mewrite,branch,aluop,ctrlalu,sign,signex,jumpex);
+
+input [5:0]op;
+input [15:0]datai;
+input [5:0]func;
+input [25:0]jump;
+input [3:0]pcup;
+output regdst,alusrc,memtoreg,regwrite,memread,mewrite,branch;
+output[1:0]aluop;
+output[3:0]ctrlalu;
+output[31:0]sign,signex,jumpex;    
+
+//*******************************************************************
+
+reg regdst,alusrc,memtoreg,regwrite,memread,mewrite,branch;
+reg[27:0]jum;
+reg[1:0]aluop;
+reg[3:0]ctrlalu;
+reg[31:0]sign,signex,jumpex,s,p;    
+
+always@(op or func or s)
+begin
+    case(op)
+        6'b100011 : begin regdst=1'b0; alusrc=1'b1; memtoreg=1'b1; regwrite=1'b1; memread=1'b1; mewrite=1'b0; branch=1'b0; aluop=2'b00; end //LW
+        6'b101011 : begin regdst=1'bx; alusrc=1'b1; memtoreg=1'bx; regwrite=1'b0; memread=1'b0; mewrite=1'b1; branch=1'b0; aluop=2'b00; end //SW
+        6'b000100 : begin regdst=1'bx; alusrc=1'b0; memtoreg=1'bx; regwrite=1'b0; memread=1'b0; mewrite=1'b0; branch=1'b1; aluop=2'b01; end //beq
+        6'b000000 : begin regdst=1'b1; alusrc=1'b0; memtoreg=1'b0; regwrite=1'b1; memread=1'b0; mewrite=1'b0; branch=1'b0; aluop=2'b10; end //Rtype
+        6'b000001 : begin regdst=1'b0; alusrc=1'b1; memtoreg=1'b0; regwrite=1'b1; memread=1'b0; mewrite=1'b0; branch=1'b0; aluop=2'b10; end //addi
+        6'b111111 : begin regdst=1'bx; alusrc=1'bx; memtoreg=1'bx; regwrite=1'bx; memread=1'bx; mewrite=1'bx; branch=1'b0; aluop=2'bxx; end //jump.. branch felan=0
+        default   : begin regdst=1'b1; alusrc=1'b0; memtoreg=1'b0; regwrite=1'b1; memread=1'b0; mewrite=1'b0; branch=1'b0; aluop=2'b10; end
+
+endcase
+
+if(func == 6'b000000)
+case(aluop)
+    2'b00   : ctrlalu=4'b0010;//+
+    2'b01   : ctrlalu=4'b0110;//-
+    default : ctrlalu=4'b0110;
+endcase
+
+if(aluop == 2'b10)
+case(func)
+    6'b100000 : ctrlalu=4'b0010;//+
+    6'b100010 : ctrlalu=4'b0110;//-
+    6'b100100 : ctrlalu=4'b0000;//&
+    6'b100101 : ctrlalu=4'b0001;//^
+    default   : ctrlalu=4'b0110;
+endcase
+
+if(op == 6'b000001)  ctrlalu=4'b0010;
+
+s=32'd0;
+p=32'd0; 
+
+sign = s ^ datai; 
+signex=sign * 4;
+
+
+jum=jump * 4;        //shift 25 bit   
+s=s ^ jum;           //signex dar 32 bit
+p=pcup * 268435456; //2^28>>shift be chap
+jumpex=p ^ s;       //concat addr ba pcup
+end
+
+endmodule
+
+//*********************************************************************
+
+`timescale 1ns/1ps
+module test_cotrol;
+reg [5:0]OP;
+reg [15:0]DATAI;
+reg [5:0]FUNC;
+reg [25:0]JUMP;
+reg [3:0]PCUP;
+wire regdst,alusrc,memtoreg,regwrite,memread,mewrite,branch;
+wire[1:0]aluop;
+wire[3:0]ctrlalu;
+wire[31:0]sign,signex,jumpex;
+
+control i1(OP,DATAI,FUNC,JUMP,PCUP,regdst,alusrc,memtoreg,regwrite,memread,mewrite,branch,aluop,ctrlalu,sign,signex,jumpex);
+
+initial
+begin
+    OP=6'b011000; DATAI=16'b0000001111111010; FUNC=6'b101011; JUMP=26'd10; PCUP=4'b1111;
+    #5OP=6'b110010; DATAI=16'b1111100000101010; FUNC=6'b111100;JUMP=26'd10; PCUP=4'b0000;
+end
+endmodule
+
+
+    

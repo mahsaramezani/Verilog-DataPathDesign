@@ -1,0 +1,46 @@
+`timescale 1ns/1ps
+module datamem(r_w,res,data2,writerg);
+    input[31:0] res,data2;
+    input r_w;
+    output[31:0]writerg;
+    reg[31:0]memory[10:0];
+    initial
+    begin
+        memory[0]=32'h00AB1123;
+        memory[1]=32'h00001187;
+        memory[2]=32'hAA860000;
+        memory[3]=32'h00000011;
+        memory[4]=32'h54330033;
+        memory[5]=32'h11001111;
+        memory[6]=32'hBC981CCC;
+        memory[7]=32'h11100990;
+        memory[8]=32'h00000000;
+        memory[9]=32'h1133440A;
+    end
+    reg [31:0]writerg;
+    always@(r_w or res or data2)
+    begin
+        if(r_w)
+         writerg=memory[res];
+        else
+         memory[res]=data2;
+    end
+endmodule
+
+//***************************************************************
+
+`timescale 1ns/1ps
+module test_datamemory;
+    reg [31:0] RES,DATA2;
+    reg R_W;
+    wire [31:0] writerg;
+    
+    datamem i1(R_W,RES,DATA2,writerg);
+    
+    initial
+    begin
+        R_W=1'b0;    RES=32'd8; DATA2=32'd1;
+        #5 R_W=1'b1; RES=32'd6; DATA2=32'd1;  
+    end
+endmodule
+    

@@ -1,0 +1,86 @@
+`timescale 1ns/1ps
+module ALU(a,b,ctrlalu,n,c,z,ov,res);
+input[31:0]a,b;
+input[3:0]ctrlalu;
+output n,c,z,ov;
+output[31:0]res;
+reg n,c,z,ov;
+reg [31:0]res;
+reg [30:0]res1; 
+
+ initial
+begin
+    n=1'b0;
+    c=1'b0;
+    z=1'b0;
+    ov=1'b0;
+end
+ always@(ctrlalu or res or n or c or z or ov)
+ begin
+ 
+ if(ctrlalu == 4'b0010)
+ begin
+      assign {c,res}=a+b;
+      assign {n,res}=a+b;
+      if(res == 32'd0)  z=1'b1;
+      else z=1'b0;
+      if(((a[31]==0) & (b[31]==0)) || ((a[31]==1) & (b[31]==1)))   ov=1'b1;
+      else  ov=1'b0; 
+ end
+ 
+ else if(ctrlalu == 4'b0110)
+  begin
+      assign {c,res}=a-b;
+      assign {n,res}=a-b;
+      if(res == 32'd0)  z=1'b1;
+      else z=1'b0;
+      if(((a[31]==0) & (b[31]==0)) || ((a[31]==1) & (b[31]==1)))   ov=1'b1;
+      else  ov=1'b0; 
+ end
+ 
+ else if(ctrlalu == 4'b0000)
+ begin
+      assign res=a&b;
+      assign {n,res1}= res + 32'd0;
+      if(res == 32'd0)  z=1'b1;
+      else  z=1'b0;
+ end
+ 
+ else if(ctrlalu == 4'b0001)
+ begin
+      assign res=a^b;
+      assign {n,res1}= res + 32'd0;
+      if(res == 32'd0)  z=1'b1;
+      else  z=1'b0;
+ end
+ 
+ else if(ctrlalu == 4'b1000)  res = ~ a;
+ else      res = b;
+ 
+ end
+  
+endmodule
+
+//************************************************************************
+`timescale 1ns/1ps
+module test_ALU;
+reg [31:0]A,B;
+reg [3:0]CTRLALU;
+wire N,C,Z,OV;
+wire[31:0]RES;
+
+ALU i1(A,B,CTRLALU,N,C,Z,OV,RES); 
+
+initial
+begin
+    A=32'd8; B=32'd0; CTRLALU=4'b0010;
+    #5 A=32'd0; B=32'd8; CTRLALU=4'b0110;
+    #5 A=32'd0; B=32'd8; CTRLALU=4'b0000;
+    #5 A=32'd22; B=32'd5; CTRLALU=4'b0001;
+    #5 A=32'd1;  CTRLALU=4'b1000;
+    #5 B=32'd0; CTRLALU=4'b1111;
+end
+endmodule
+
+ 
+

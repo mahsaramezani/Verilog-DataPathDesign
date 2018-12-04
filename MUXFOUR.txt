@@ -1,0 +1,26 @@
+`timescale 1ns/1ps
+module muxfour(i0,i1,i2,i3,s0,s1,y);
+input i0,i1,i2,i3,s0,s1;
+output y;
+assign y=s0?(s1?i3:i1):(s1?i2:i0);
+endmodule
+
+//*************************************
+`timescale 1ns/1ps
+module test_muxfour;
+    reg I0,I1,I2,I3,S0,S1;
+    wire out;
+    
+    muxfour r1(I0,I1,I2,I3,S0,S1,out);
+    
+    initial
+    begin
+        I0=1'b0; I1=1'b0; I2=1'b1; I3=1'b1; S0=1'b0; S1=1'b0;
+        #10; I0=1'b1; I3=1'b0; S0=1'b1; S1=1'b0;
+        #20; I1=1'b1; I2=1'b0; S0=1'b0; S1=1'b1; 
+        #30; I0=1'b0; I3=1'b1; I2=1'b1; S0=1'b1; S1=1'b1;
+        #50 $stop;
+    end
+endmodule
+
+//****************************************

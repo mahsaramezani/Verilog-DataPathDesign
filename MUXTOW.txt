@@ -1,0 +1,21 @@
+ `timescale 1ns/1ps
+module muxtwo(i0,i1,s,y);
+input i0,i1,s;
+output y;
+assign y=s ? i1 : i0 ;
+endmodule
+//****************************************
+`timescale 1ns/1ps
+module test_muxtwo;
+    reg I0,I1,S;
+    wire out;
+    
+    muxtwo r1(I0,I1,S,out);
+    
+    initial
+    begin
+        I0=1'b0; I1=1'b0; S=1'b0;
+        #10; I0=1'b1; I1=1'b0; S=1'b1;
+        #50 $stop;
+    end
+endmodule

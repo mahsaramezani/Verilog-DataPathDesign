@@ -1,0 +1,43 @@
+module contrl2(branch,z,op,t0,t1);
+    input branch,z;
+    input [5:0] op;
+    output t0,t1;
+    
+    reg x;
+    reg t0,t1;
+    always@(op or t0 or t1 or x)
+    begin
+        
+    x=branch & z;
+    if(op == 6'b111111)  
+      begin
+        t0=1'b0; t1=1'b1; end
+        
+    else if(x == 1'b1)
+        begin
+        t0=1'b1; t1=1'b0; end
+    else if(x == 1'b0)
+    begin
+        t0=1'b0; t1=1'b0; end
+    else
+    begin
+        t0=1'b1; t1=1'b1; end
+    end
+endmodule
+
+//******************************************************************
+        
+module test_contrl2;
+    reg BRANCH,Z;
+    reg [5:0]OP;
+    wire t0,t1;
+    
+    contrl2 i1(BRANCH,Z,OP,t0,t1);
+    initial
+    begin
+        
+    BRANCH=1'b1; Z=1'b1; OP=6'b000000;
+    #5 BRANCH=1'b1; Z=1'b0; OP=6'b111111;
+    
+end
+endmodule

@@ -1,0 +1,118 @@
+`timescale 1ns/1ps
+module instmem(instruct,op,readrg1,readrg2,writerg,shift,func,datai,jump,pcup);
+    input [3:0]instruct;
+    output[5:0]op;
+    output[4:0]readrg1,readrg2,writerg,shift;
+    output[5:0]func;
+    output[15:0]datai;
+    output[25:0]jump;
+    output[3:0]pcup;
+
+//****************************************
+
+  reg [31:0]inst;
+   always@(instruct or inst)
+   begin
+       case(instruct)
+           3'b0000 : inst=32'b10001100011000100000100000000000 ; //LW
+           3'b0001 : inst=32'b10101100011000100000100000000000 ; //SW
+           3'b0010 : inst=32'b00010000011000100000100000000000 ; //beq
+           3'b0011 : inst=32'b00000000011000100000100000100000 ; //add
+           3'b0100 : inst=32'b00000000011000100000100000100010 ; //sub
+           3'b0101 : inst=32'b00000000011000100000100000100100 ; //AND
+           3'b0110 : inst=32'b00000000011000100000100000100101 ; //OR
+           3'b0111 : inst=32'b00000100011000100000100000100000 ; //addi
+           3'b1000 : inst=32'b11111100011000100000100000100000 ; //jump
+           default : inst=32'b00000100011000100000100000100000 ;
+   endcase
+   end
+   
+   //**************************************
+   
+    integer i,j;
+    reg [5:0]op,func;
+    reg[4:0]readrg1,readrg2,writerg,shift;
+    reg[15:0]datai;
+    reg[25:0]jump;
+    reg[3:0]pcup;
+    
+always@(inst or i or j)
+begin
+    j=0;
+    for(i = 26 ; i <= 31 ; i = i + 1)
+    begin
+        op[j]=inst[i];
+        j=j+1;
+    end
+    j=0;
+    for(i = 21 ; i <= 25 ; i = i + 1)
+    begin
+        readrg1[j]=inst[i];
+        j=j+1;
+    end
+     j=0;
+    for(i = 16 ; i <= 20 ; i = i + 1)
+    begin
+        readrg2[j]=inst[i];
+        j=j+1;
+    end
+     j=0;
+    for(i = 11 ; i <= 15 ; i = i + 1)
+    begin
+        writerg[j]=inst[i];
+        j=j+1;
+    end
+     j=0;
+    for(i = 6 ; i <= 10 ; i = i + 1)
+    begin
+        shift[j]=inst[i];
+        j=j+1;
+    end
+     j=0;
+    for(i = 0 ; i <= 5 ; i = i + 1)
+    begin
+        func[j]=inst[i];
+        j=j+1;
+    end
+    j=0;
+    for(i = 0 ; i <= 15 ; i = i + 1)
+    begin
+        datai[j]=inst[i];
+        j=j+1;
+    end
+    j=0;
+    for(i = 0 ; i <= 25 ; i = i + 1)
+    begin
+        jump[j]=inst[i];
+        j=j+1;
+    end
+    j=0;
+    for(i = 28 ; i <= 31 ; i = i + 1)
+    begin
+        pcup[j]=inst[i];
+        j=j+1;
+    end
+    end
+endmodule
+ 
+//*********************************************************
+
+`timescale 1ns/1ps
+module test_instmem;
+    reg [3:0]INSTRUCT;
+    wire[5:0]op;
+    wire[4:0]readrg1,readrg2,writerg,shift;
+    wire[5:0]func;
+    wire[15:0]datai;
+    wire[25:0]jump;
+    wire[3:0]pcup;
+    
+    instmem i1(INSTRUCT,op,readrg1,readrg2,writerg,shift,func,datai,jump,pcup);
+    
+    initial
+    begin
+   INSTRUCT=3'b000;
+   #5 INSTRUCT=3'b0110;
+    end
+endmodule
+
